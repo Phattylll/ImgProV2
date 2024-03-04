@@ -41,7 +41,7 @@ meat_groups = {
 class_labels_fruit = ['Green and Brown Fruits','Red and Blue Fruits','Yellow and Orange Fruits']
 fruit_groups = {
     'Green and Brown Fruits': ['Taro (เผือก)', 'Kiwi (กีวี)', 'Avocado (อะโวคาโด)', 'Coconut (มะพร้าว)', 'Sapodilla (ละมุด)', 'Potato (มันฝรั่ง)', 'Guava (ฝรั่ง)', 'Custard apple (น้อยหน่า)', 'Melon (เมล่อน)', 'Longan (ลำไยและลองกอง)'],
-    'Red and Blue Fruits': ['Tomato (มะเขือเทศ)', 'Dragon fruit (แก้วมังกร)', 'Grapes (องุ่น)', 'Rambutan (เงาะ)', 'Lychee (ลิ้นจี่)', 'Peach (พีช)', 'Plum (ลุกพลัม)', 'Cherry (เชอร์รี่)', 'Salak (สละ)', 'Apple (แอปเปิ้ล)', 'Blueberry (บลูเบอร์รี)', 'Pomegranate (ทับทิม)', 'Passion fruit (เสาวรส)', 'Watermelon (แตงโม)', 'Mangosteen (ชมพู่)', 'Strawberry (สตรอว์เบอรี่)', 'Rose apple (ชมพู่)'],
+    'Red and Blue Fruits': ['Tomato (มะเขือเทศ)', 'Dragon fruit (แก้วมังกร)', 'Grapes (องุ่น)', 'Rambutan (เงาะ)', 'Lychee (ลิ้นจี่)', 'Peach (พีช)', 'Plum (ลุกพลัม)', 'Cherry (เชอร์รี่)', 'Salak (สละ)', 'Apple (แอปเปิ้ล)', 'Blueberry (บลูเบอร์รี)', 'Pomegranate (ทับทิม)', 'Passion fruit (เสาวรส)', 'Watermelon (แตงโม)', 'Mangosteen (ชมพู่)', 'Strawberry (สตรอว์เบอร์รี่)', 'Rose apple (ชมพู่)'],
     'Yellow and Orange Fruits': ['Lemon (เลมอน)', 'Orange (ส้ม)', 'Chinese pear (สาลี่)', 'Jicama (มันแกว)', 'Durian (ทุเรียน)', 'Banana (กล้วย)', 'Pumpkin (ฟักทอง)', 'Pineapple (สับปะรด)', 'Maprang (มะปราง)', 'Mango (มะม่วง)', 'Corn (ข้าวโพด)', 'Pear (ลูกแพร)', 'Jackfruit (ขนุน)', 'Papaya (มะละกอ)', 'Cantaloupe (แคนตาลูป)'],
     
 }
