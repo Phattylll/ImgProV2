@@ -48,10 +48,9 @@ fruit_groups = {
 
 class_labels_vegetable = ['Green vegetables','Red and orange vegetables','White and light-colored vegetables']
 vegetable_groups = {
-    'Green vegetables': ['Basil (โหระพา)', 'Spring onion (ต้นหอม)', 'Pepper (พริกไทย)', 'Coriander (ผักชี)', 'Lemon grass (ตะไคร้)', 'Ivy gourd (ตำลึง)', 'Sweet basil (กะเพรา)', 'Water spinach (ผักบุ้ง)', 'Acacia (ชะอม)', 'Long beans (ถั่วฝักยาว)', 'Spinach (ผักโขม)', 'Broccoli (บรอคโคลี)', 'Kaffir lime (มะกรูด)', 'Peppermint (สะระแหน่)', 'Chinese cabbage (ผักบุ้ง)', 'Cucumber (ผักกาดขาว)', 'Kale (คะน้า)' , 'Salad vegetables (ผักสลัด)', 'Cabbage (กะหล่ำปลี)', 'Bitter melon (มะระ)', 'Asparagus (หน่อไม้ฝรั่ง)', 'Squash (ฟัก)', 'Neem (สะเดา)', 'Eggplant (มะเขือ)', 'Bitter bean (สะตอ)', 'Celery (ขึ้นฉ่าย)', 'Bok choy (กวางตุ้ง)', 'Garlic chives (ต้นหอม)'],
+    'Green vegetables': ['Basil (โหระพา)', 'Spring onion (ต้นหอม)', 'Pepper (พริกไทย)', 'Coriander (ผักชี)', 'Lemon grass (ตะไคร้)', 'Ivy gourd (ตำลึง)', 'Sweet basil (กะเพรา)', 'Water spinach (ผักบุ้ง)', 'Acacia (ชะอม)', 'Long beans (ถั่วฝักยาว)', 'Spinach (ผักโขม)', 'Broccoli (บรอคโคลี)', 'Kaffir lime (มะกรูด)', 'Peppermint (สะระแหน่)', 'Chinese cabbage (ผักกาดขาว)', 'Cucumber (แตงกวา)', 'Kale (คะน้า)' , 'Salad vegetables (ผักสลัด)', 'Cabbage (กะหล่ำปลี)', 'Bitter melon (มะระ)', 'Asparagus (หน่อไม้ฝรั่ง)', 'Squash (ฟัก)', 'Neem (สะเดา)', 'Eggplant (มะเขือ)', 'Bitter bean (สะตอ)', 'Celery (ขึ้นฉ่าย)', 'Bok choy (กวางตุ้ง)', 'Garlic chives (ต้นหอม)'],
     'Red and orange vegetables': ['Onion (หัวหอม)', 'Carrot (แครอท)', 'Chilli pepper (พริก)', 'Capsicum (พริกหยวก)', 'Bell pepper (พริกสามสี)'],
     'White and light-colored vegetables': ['Bamboo shoot (หน่อไม้)', 'Ginger (ขิง)', 'Cauliflower (กะหล่ำดอก)', 'Lotus stem (รากบัว)', 'Baby corn (ข้าวโพดอ่อน)', 'Bean sprout (ถั่วงอก)', 'Raddish (หัวไชเท้า)', 'Garlic (กระเทียม)', 'Sesbania grandiflora (ดอกแค)'],
     }
-
 
 
