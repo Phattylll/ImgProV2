@@ -7,7 +7,7 @@ import sys
 import requests
 from io import BytesIO
 from pyzbar.pyzbar import decode
-from pkg.env import MODEL_PATH,FOOD_CLASS_TEST_PATH
+from pkg.env import SUBCLASS_PATH,FOOD_CLASS_TEST_PATH
 sys.path.append(r'ImgPro\Lib')
 from pkg.dataset.categories_keywords import class_labels, class_details, class_unit, class_labels_meat, class_labels_fruit, class_labels_vegetable, meat_groups, fruit_groups, vegetable_groups
 
@@ -114,6 +114,10 @@ def load_sub_model(model_path, img_path, labels, groups):
 
     return most_confident_label, most_confident_confidence, sub_class_detail
 
+
+remaining_classes = None
+sub_class = None
+
 def predict_class(img_path):
     try:
         status = 'success'
@@ -128,25 +132,38 @@ def predict_class(img_path):
                 return {
                     'status': status,
                     'Img_path': Img_path,
+                    'confidence': None,
                     'barcode': barcode,
                     'predicted_class': 'อื่น ๆ',
                     'product_name': product_name,
                     'sub_class': class_labels,
                     'subclass_unit': class_unit,
+                    'class_details': None,
+                    'class_unit': None,
+                    'remaining_classes': None,
+                    'remaining_sub_classes': None,
+                    'sub_class_detail': None,
                 }
             else:
                 return {
                     'status': status,
                     'Img_path': Img_path,
+                    'confidence': None,
                     'barcode': barcode,
                     'predicted_class': 'อื่น ๆ',
                     'product_name': 'No data in open food fact api',
                     'sub_class': class_labels,
                     'subclass_unit': class_unit,
+                    'class_details': None,
+                    'class_unit': None,
+                    'remaining_classes': None,
+                    'remaining_sub_classes': None,
+                    'sub_class_detail': None,
+
                 }
 
         img_array = load_image(img_path)
-        loaded_model = load_model(FOOD_CLASS_TEST_PATH)
+        loaded_model = load_model(os.getcwd()+FOOD_CLASS_TEST_PATH)
         predictions = loaded_model.predict(img_array)
         confidence = np.max(predictions) * 100
         predicted_class_index = np.argmax(predictions)
@@ -156,37 +173,51 @@ def predict_class(img_path):
         class_unit_result = class_unit.get(predicted_class, [])
 
         if predicted_class in {"ผลไม้", "ผัก", "เนื้อสัตว์"}:
+            print(os.getcwd()+SUBCLASS_PATH+"/groupFruit_class_epoch_200.h5")
             model_path, labels, groups = {
-                "ผลไม้": (MODEL_PATH+"/groupFruit_class_epoch_200.h5", class_labels_fruit, fruit_groups),
-                "ผัก": (MODEL_PATH+"/groupVeg_class_epoch_200.h5", class_labels_vegetable, vegetable_groups),
-                "เนื้อสัตว์": (MODEL_PATH+"/groupMeat_class_epoch_200.h5", class_labels_meat, meat_groups),
+
+            "ผลไม้": (os.getcwd()+SUBCLASS_PATH+"/groupFruit_class_epoch_200.h5", class_labels_fruit, fruit_groups,),
+            "ผัก": (os.getcwd()+SUBCLASS_PATH+"/groupVeg_class_epoch_200.h5", class_labels_vegetable, vegetable_groups),
+            "เนื้อสัตว์": (os.getcwd()+SUBCLASS_PATH+"/groupMeat_class_epoch_200.h5", class_labels_meat, meat_groups),
+
             }[predicted_class]
 
             most_confident_label, sub_class_confidence, sub_class_detail = load_sub_model(model_path, img_path, labels, groups)
+            remaining_classes = [label for label in class_labels if label != predicted_class]
+  
 
             if predicted_class == "ผลไม้":
                 if most_confident_label == 'Green and Brown Fruits':
                     sub_class = 'ผลไม้โทนสีเขียวและสีน้ำตาล'
+                    remaining_sub_classes = ['ผลไม้โทนสีแดงและสีน้ำเงิน', 'ผลไม้โทนสีเขียวและสีน้ำตาล']
                 elif most_confident_label == 'Red and Blue Fruits':
                     sub_class = 'ผลไม้โทนสีแดงและสีน้ำเงิน'
+                    remaining_sub_classes = ['ผลไม้โทนสีเขียวและสีน้ำตาล', 'ผลไม้โทนสีเขียวและสีน้ำตาล']
                 elif most_confident_label == 'Yellow and Orange Fruits':
                     sub_class = 'ผลไม้โทนสีเหลืองและสีส้ม'
+                    remaining_sub_classes = ['ผลไม้โทนสีแดงและสีน้ำเงิน', 'ผลไม้โทนสีเขียวและสีน้ำตาล']
 
             elif predicted_class == "ผัก":
                 if most_confident_label == 'Green vegetables':
                     sub_class = 'ผักโทนสีเขียว'
+                    remaining_sub_classes = ['ผักโทนสีสว่าง', 'ผักโทนสีแดงและสีส้ม']
                 elif most_confident_label == 'Red and orange vegetables':
                     sub_class = 'ผักโทนสีแดงและสีส้ม'
+                    remaining_sub_classes = ['ผักโทนสีสว่าง', 'ผักโทนสีเขียว']
                 elif most_confident_label == 'White and light-colored vegetables':
                     sub_class = 'ผักโทนสีสว่าง'
+                    remaining_sub_classes = ['ผักโทนสีแดงและสีส้ม', 'ผักโทนสีเขียว']
 
             elif predicted_class == "เนื้อสัตว์":
                 if most_confident_label == 'OtherMeats and Mushroom':
-                    sub_class = 'เห็ดหรือเนื้อสัตว์อื่น ๆ '
+                    sub_class = 'เห็ดหรือเนื้อสัตว์อื่น ๆ'
+                    remaining_sub_classes = ['สัตว์ปีก', 'อาหารทะเล']
                 elif most_confident_label == 'Poultry':
                     sub_class = 'สัตว์ปีก'
+                    remaining_sub_classes = ['เห็ดหรือเนื้อสัตว์อื่น ๆ', 'อาหารทะเล']
                 elif most_confident_label == 'Seafood':
                     sub_class = 'อาหารทะเล'
+                    remaining_sub_classes = ['เห็ดหรือเนื้อสัตว์อื่น ๆ', 'สัตว์ปีก']
 
             return {
                 'status': status,
@@ -197,8 +228,12 @@ def predict_class(img_path):
                 'product_name': None,
                 'class_details': class_details_result,
                 'class_unit': class_unit_result,
+                'remaining_classes': remaining_classes,
                 'sub_class': sub_class,
                 'sub_class_detail': sub_class_detail,
+                'remaining_sub_classes': remaining_sub_classes,
+                'subclass_unit': None
+
             }
 
         else:
@@ -214,9 +249,17 @@ def predict_class(img_path):
             'product_name': None,
             'class_details': class_details_result,
             'class_unit': class_unit_result,
+            'remaining_classes': remaining_classes,
             'sub_class': sub_class,
             'sub_class_detail': sub_class_detail,
+            'subclass_unit': None,
+            'remaining_sub_classes': None
         }
+
+
+
+
+
 
         return result
 
