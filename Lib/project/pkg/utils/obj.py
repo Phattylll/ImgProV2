@@ -148,7 +148,7 @@ def predict_class(img_path):
                     'confidence': '0.0000%',
                     'class_details': {},
                     'class_unit': [],
-                    'sub_class': sub_class,
+                    # 'sub_class': sub_class,
                     'sub_class_detail': sub_class_detail,
                     'remaining_sub_classes': remaining_sub_classes,
                 }
@@ -165,7 +165,7 @@ def predict_class(img_path):
                     'confidence': '0.0000%',
                     'class_details': {},
                     'class_unit': [],
-                    'sub_class': sub_class,
+                    # 'sub_class': sub_class,
                     'sub_class_detail': sub_class_detail,
                     'remaining_sub_classes': remaining_sub_classes,
                 }
