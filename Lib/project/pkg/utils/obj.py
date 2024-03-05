@@ -7,7 +7,7 @@ import sys
 import requests
 from io import BytesIO
 from pyzbar.pyzbar import decode
-from pkg.env import SUBCLASS_PATH,FOOD_CLASS_TEST_PATH
+from pkg.env import SUBCLASS_PATH, FOOD_CLASS_TEST_PATH
 sys.path.append(r'ImgPro\Lib')
 from pkg.dataset.categories_keywords import class_labels, class_details, class_unit, class_labels_meat, class_labels_fruit, class_labels_vegetable, meat_groups, fruit_groups, vegetable_groups
 
@@ -16,6 +16,7 @@ loaded_model = None
 
 def load_image_common(img_path, target_size):
     try:
+        global IMAGE_SIZE
         if img_path.startswith(('http://', 'https://')):
             response = requests.get(img_path)
             response.raise_for_status()
@@ -83,47 +84,53 @@ def fetch_product_info(barcode):
         raise e
 
 def load_sub_model(model_path, img_path, labels, groups):
-    model = load_model(model_path)
-    print(f"Sub-model loaded successfully: {model}")
+    global loaded_model
+    try:
+        model = load_model(model_path)
+        print(f"Sub-model loaded successfully: {model}")
 
-    img_array = load_imagesub(img_path)
-    print(f"Image loaded and preprocessed successfully for sub-model {img_array}")
+        img_array = load_imagesub(img_path)
+        print(f"Image loaded and preprocessed successfully for sub-model {img_array}")
 
-    predictions = model.predict(img_array)
-    sorted_indices = np.argsort(-predictions[0])
-    most_confident_idx = sorted_indices[0]
-    most_confident_label = labels[most_confident_idx]
-    most_confident_confidence = predictions[0][most_confident_idx]
-    sub_class_detail = []
+        predictions = model.predict(img_array)
+        sorted_indices = np.argsort(-predictions[0])
+        most_confident_idx = sorted_indices[0]
+        most_confident_label = labels[most_confident_idx]
+        most_confident_confidence = predictions[0][most_confident_idx]
+        sub_class_detail = []
 
-    most_confident_subclass = groups[most_confident_label]
-    sorted_subclass = sorted(most_confident_subclass, key=lambda x: x.lower())
-    for sub_idx, sub_name in enumerate(sorted_subclass, start=1):
-        sub_confidence = predictions[0][labels.index(most_confident_label)] if sub_name in most_confident_subclass else 0
-        print(f"{sub_name}")
-        sub_class_detail.append(sub_name)
-
-    for idx in sorted_indices[1:]:
-        current_label = labels[idx]
-        current_subclass = groups[current_label]
-        sorted_current_subclass = sorted(current_subclass, key=lambda x: x.lower())
-        for sub_idx, sub_name in enumerate(sorted_current_subclass, start=1):
-            sub_confidence = predictions[0][labels.index(current_label)] if sub_name in current_subclass else 0
+        most_confident_subclass = groups[most_confident_label]
+        sorted_subclass = sorted(most_confident_subclass, key=lambda x: x.lower())
+        for sub_idx, sub_name in enumerate(sorted_subclass, start=1):
+            sub_confidence = predictions[0][labels.index(most_confident_label)] if sub_name in most_confident_subclass else 0
             print(f"{sub_name}")
             sub_class_detail.append(sub_name)
 
-    return most_confident_label, most_confident_confidence, sub_class_detail
+        for idx in sorted_indices[1:]:
+            current_label = labels[idx]
+            current_subclass = groups[current_label]
+            sorted_current_subclass = sorted(current_subclass, key=lambda x: x.lower())
+            for sub_idx, sub_name in enumerate(sorted_current_subclass, start=1):
+                sub_confidence = predictions[0][labels.index(current_label)] if sub_name in current_subclass else 0
+                print(f"{sub_name}")
+                sub_class_detail.append(sub_name)
 
+        return most_confident_label, most_confident_confidence, sub_class_detail
 
-remaining_classes = None
-sub_class = None
+    except Exception as e:
+        raise e
 
 def predict_class(img_path):
+    global loaded_model
     try:
         status = 'success'
         Img_path = None
         barcode = decode_barcode(img_path)
         Img_path = img_path
+        remaining_classes = []  # Initialize remaining_classes here
+        remaining_sub_classes = []  # Initialize remaining_sub_classes here
+        sub_class = ''  # Initialize sub_class here
+        sub_class_detail = []  # Initialize sub_class_detail here
 
         if barcode:
             product_name = fetch_product_info(barcode)
@@ -132,34 +139,35 @@ def predict_class(img_path):
                 return {
                     'status': status,
                     'Img_path': Img_path,
-                    'confidence': None,
                     'barcode': barcode,
                     'predicted_class': 'อื่น ๆ',
                     'product_name': product_name,
                     'sub_class': class_labels,
                     'subclass_unit': class_unit,
-                    'class_details': None,
-                    'class_unit': None,
-                    'remaining_classes': None,
-                    'remaining_sub_classes': None,
-                    'sub_class_detail': None,
+                    'remaining_classes': remaining_classes,
+                    'confidence': '0.0000%',
+                    'class_details': {},
+                    'class_unit': [],
+                    'sub_class': sub_class,
+                    'sub_class_detail': sub_class_detail,
+                    'remaining_sub_classes': remaining_sub_classes,
                 }
             else:
                 return {
                     'status': status,
                     'Img_path': Img_path,
-                    'confidence': None,
                     'barcode': barcode,
                     'predicted_class': 'อื่น ๆ',
                     'product_name': 'No data in open food fact api',
                     'sub_class': class_labels,
                     'subclass_unit': class_unit,
-                    'class_details': None,
-                    'class_unit': None,
-                    'remaining_classes': None,
-                    'remaining_sub_classes': None,
-                    'sub_class_detail': None,
-
+                    'remaining_classes': remaining_classes,
+                    'confidence': '0.0000%',
+                    'class_details': {},
+                    'class_unit': [],
+                    'sub_class': sub_class,
+                    'sub_class_detail': sub_class_detail,
+                    'remaining_sub_classes': remaining_sub_classes,
                 }
 
         img_array = load_image(img_path)
@@ -172,19 +180,15 @@ def predict_class(img_path):
         class_details_result = class_details.get(predicted_class, {})
         class_unit_result = class_unit.get(predicted_class, [])
 
-        if predicted_class in {"ผลไม้", "ผัก", "เนื้อสัตว์"}:
-            print(os.getcwd()+SUBCLASS_PATH+"/groupFruit_class_epoch_200.h5")
+        if predicted_class in {"ผลไม้", "ผัก", "เห็ดหรือเนื้อสัตว์อื่น ๆ"}:
             model_path, labels, groups = {
-
-            "ผลไม้": (os.getcwd()+SUBCLASS_PATH+"/groupFruit_class_epoch_200.h5", class_labels_fruit, fruit_groups,),
-            "ผัก": (os.getcwd()+SUBCLASS_PATH+"/groupVeg_class_epoch_200.h5", class_labels_vegetable, vegetable_groups),
-            "เนื้อสัตว์": (os.getcwd()+SUBCLASS_PATH+"/groupMeat_class_epoch_200.h5", class_labels_meat, meat_groups),
-
+                "ผลไม้": (os.getcwd()+SUBCLASS_PATH+"/groupFruit_class_epoch_200.h5", class_labels_fruit, fruit_groups,),
+                "ผัก": (os.getcwd()+SUBCLASS_PATH+"/groupVeg_class_epoch_200.h5", class_labels_vegetable, vegetable_groups),
+                "เห็ดหรือเนื้อสัตว์อื่น ๆ": (os.getcwd()+SUBCLASS_PATH+"/groupMeat_class_epoch_200.h5", class_labels_meat, meat_groups),
             }[predicted_class]
 
             most_confident_label, sub_class_confidence, sub_class_detail = load_sub_model(model_path, img_path, labels, groups)
             remaining_classes = [label for label in class_labels if label != predicted_class]
-  
 
             if predicted_class == "ผลไม้":
                 if most_confident_label == 'Green and Brown Fruits':
@@ -208,7 +212,7 @@ def predict_class(img_path):
                     sub_class = 'ผักโทนสีสว่าง'
                     remaining_sub_classes = ['ผักโทนสีแดงและสีส้ม', 'ผักโทนสีเขียว']
 
-            elif predicted_class == "เนื้อสัตว์":
+            elif predicted_class == "เห็ดหรือเนื้อสัตว์อื่น ๆ":
                 if most_confident_label == 'OtherMeats and Mushroom':
                     sub_class = 'เห็ดหรือเนื้อสัตว์อื่น ๆ'
                     remaining_sub_classes = ['สัตว์ปีก', 'อาหารทะเล']
@@ -219,50 +223,43 @@ def predict_class(img_path):
                     sub_class = 'อาหารทะเล'
                     remaining_sub_classes = ['เห็ดหรือเนื้อสัตว์อื่น ๆ', 'สัตว์ปีก']
 
-            return {
-                'status': status,
-                'Img_path': Img_path,
-                'predicted_class': predicted_class,
-                'confidence': f'{confidence:.4f}%',
-                'barcode': None,
-                'product_name': None,
-                'class_details': class_details_result,
-                'class_unit': class_unit_result,
-                'remaining_classes': remaining_classes,
-                'sub_class': sub_class,
-                'sub_class_detail': sub_class_detail,
-                'remaining_sub_classes': remaining_sub_classes,
-                'subclass_unit': None
-
-            }
-
         else:
-            predicted_sub_class = 'other'
-            predicted_sub_class_detail = {}
+            sub_class = 'other'
+            sub_class_detail = {}
 
         result = {
             'status': status,
             'Img_path': Img_path,
             'predicted_class': predicted_class,
             'confidence': f'{confidence:.4f}%',
-            'barcode': None,
-            'product_name': None,
+            'barcode': barcode,
+            'product_name': fetch_product_info(barcode),
             'class_details': class_details_result,
             'class_unit': class_unit_result,
             'remaining_classes': remaining_classes,
             'sub_class': sub_class,
             'sub_class_detail': sub_class_detail,
-            'subclass_unit': None,
-            'remaining_sub_classes': None
+            'remaining_sub_classes': remaining_sub_classes,
+            'subclass_unit': class_unit,
         }
-
-
-
-
-
 
         return result
 
     except Exception as e:
         status = 'error'
-        return {'status': status, 'Img_path': Img_path, 'error': str(e)}
+        return {
+            'status': status,
+            'Img_path': Img_path,
+            'barcode': None,
+            'product_name': None,
+            'predicted_class': 'อื่น ๆ',
+            'confidence': '0.0000%',
+            'class_details': {},
+            'class_unit': [],
+            'remaining_classes': [],
+            'sub_class': 'other',
+            'sub_class_detail': {},
+            'remaining_sub_classes': [],
+            'error': str(e),
+        }
+
